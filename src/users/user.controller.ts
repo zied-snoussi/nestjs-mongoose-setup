@@ -23,7 +23,7 @@ export class UserController {
     @Get(':id')
     async getUserById(@Param('id') id: string): Promise<UserResponseDto> {
         const isValid = mongoose.Types.ObjectId.isValid(id);
-        if (!isValid) throw new HttpException('No user found', 404);
+        if (!isValid) throw new HttpException('Invalid user id', 400);
         const findUser = await this.userService.getUserById(id);
         if (!findUser) throw new HttpException('No user found', 404);
         return findUser;
@@ -33,7 +33,7 @@ export class UserController {
     @UsePipes(new ValidationPipe())
     async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
         const isValid = mongoose.Types.ObjectId.isValid(id);
-        if (!isValid) throw new HttpException('No user found', 404);
+        if (!isValid) throw new HttpException('Invalid user id', 400);
         const updatedUser = await this.userService.updateUser(id, updateUserDto);
         if (!updatedUser) throw new HttpException('No user found', 404);
         return updatedUser;
@@ -43,7 +43,7 @@ export class UserController {
     @Delete(':id')
     async deleteUser(@Param('id') id: string) {
         const isValid = mongoose.Types.ObjectId.isValid(id);
-        if (!isValid) throw new HttpException('No user found', 404);
+        if (!isValid) throw new HttpException('Invalid user id', 400);
         const deletedUser = await this.userService.deleteUser(id);
         if (!deletedUser) throw new HttpException('No user found', 404);
         return "User deleted successfully";
