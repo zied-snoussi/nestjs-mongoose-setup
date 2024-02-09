@@ -1,11 +1,11 @@
 import { Body, Controller, Delete, Get, HttpException, Param, Patch, Post, UsePipes, ValidationPipe } from "@nestjs/common";
 import { CreateUserDto, UpdateUserDto, UserListResponseDto, UserResponseDto } from "./dto/User.dto";
-import { UserService } from "./users.service";
+import { UsersService } from "./users.service";
 import mongoose from "mongoose";
 
 @Controller('users')
-export class UserController {
-    constructor(private userService: UserService) { }
+export class UsersController {
+    constructor(private userService: UsersService) { }
     @Post()
     @UsePipes(new ValidationPipe())
     createUser(@Body() createUserDto: CreateUserDto) {
