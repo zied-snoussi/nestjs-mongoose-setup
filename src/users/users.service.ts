@@ -6,7 +6,7 @@ import { CreateUserDto, UpdateUserDto, UserListResponseDto, UserResponseDto } fr
 
 // The UserService class is a provider that is injected into the UsersModule.
 @Injectable()
-export class UserService {
+export class UsersService {
     // The @InjectModel() decorator is used to inject the User model into the UserService class.
     constructor(@InjectModel(User.name) private userModel: Model<User>) { }
 
