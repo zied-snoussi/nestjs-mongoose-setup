@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpException, Param, Patch, Post, UseGu
 import { CreateProductDto, ProductResponseDto, UpdateProductDto } from "./dto/Product.dto";
 import mongoose from "mongoose";
 import { ProductService } from "./product.service";
-import { JwtGuard } from "src/guadrs/jwt.guards";
+import { JwtGuard } from "../guadrs/jwt.guards";
 @Controller('products')
 export class ProductController {
     constructor(private productService: ProductService) { }

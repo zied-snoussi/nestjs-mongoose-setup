@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common"; // Import the Injectable decorator from the @nestjs/common library.
 import { InjectModel } from "@nestjs/mongoose"; // Import the InjectModel decorator from the @nestjs/mongoose library.
 import { Model } from "mongoose"; // Import the Model type from the mongoose library.
-import { User } from "src/schema/User.schema"; // Import the User schema from the schemas folder.
+import { User } from "../schema/User.schema"; // Import the User schema from the schemas folder.
 import { CreateUserDto, UpdateUserDto, UserListResponseDto, UserResponseDto } from "./dto/User.dto";
 import { LoginDto } from "./dto/Auth.dto";
 import { JwtService } from "@nestjs/jwt";

@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpException, Param, Patch, Post, UseGu
 import { CreateRatingDto, RatingResponseDto, UpdateRatingDto } from "./dto/Rating.dto";
 import mongoose from "mongoose";
 import { RatingService } from "./rating.service";
-import { JwtGuard } from "src/guadrs/jwt.guards";
+import { JwtGuard } from "../guadrs/jwt.guards";
 
 
 @Controller('ratings')

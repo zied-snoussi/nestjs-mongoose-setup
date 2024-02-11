@@ -1,8 +1,9 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
-import { Order, OrderSchema } from "src/schema/Order.schema";
+
 import { OrderController } from "./order.controller";
 import { OrderService } from "./order.service";
+import { Order, OrderSchema } from "../schema/Order.schema";
 
 @Module({
     imports: [MongooseModule.forFeature([{

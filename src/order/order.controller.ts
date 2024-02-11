@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpException, Param, Patch, Post, UseGu
 import { CreateOrderDto, OrderResponseDto, UpdateOrderDto } from "./dto/Order.dto";
 import { OrderService } from "./order.service";
 import mongoose from "mongoose";
-import { JwtGuard } from "src/guadrs/jwt.guards";
+import { JwtGuard } from "../guadrs/jwt.guards";
 
 @Controller('orders')
 export class OrderController {

@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose"; 
 import { Model } from "mongoose";
-import { Rating } from "src/schema/Rating.schema";
+import { Rating } from "../schema/Rating.schema";
 import { CreateRatingDto, RatingResponseDto, UpdateRatingDto } from "./dto/Rating.dto";
 
 @Injectable()

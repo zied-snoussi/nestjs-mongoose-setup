@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common"; // Import the Module decorator from the @nestjs/common library.
 import { MongooseModule } from "@nestjs/mongoose"; // Import the MongooseModule from the @nestjs/mongoose library.
-import { User, UserSchema } from "src/schema/User.schema"; // Import the User schema and UserSchema from the schemas folder.
+import { User, UserSchema } from "../schema/User.schema"; // Import the User schema and UserSchema from the schemas folder.
 import { UserService } from "./user.service";
 import { UserController } from "./user.controller";
 import { JwtModule, JwtService } from "@nestjs/jwt";

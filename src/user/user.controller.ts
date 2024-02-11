@@ -4,7 +4,7 @@ import { UserService } from "./user.service";
 import mongoose from "mongoose";
 import { LoginDto } from "./dto/Auth.dto";
 import { RefreshJwtGuard } from "../guadrs/refresh.guard";
-import { JwtGuard } from "src/guadrs/jwt.guards";
+import { JwtGuard } from "../guadrs/jwt.guards";
 
 
 @Controller('users')
