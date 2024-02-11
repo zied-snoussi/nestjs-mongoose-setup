@@ -6,10 +6,10 @@
 
 <div align="center">
 
-  [![License](https://img.shields.io/github/license/yourusername/yourprojectname)](https://github.com/yourusername/yourprojectname/blob/main/LICENSE)
-  [![Issues](https://img.shields.io/github/issues/yourusername/yourprojectname)](https://github.com/yourusername/yourprojectname/issues)
-  [![Stars](https://img.shields.io/github/stars/yourusername/yourprojectname)](https://github.com/yourusername/yourprojectname/stargazers)
-  [![Forks](https://img.shields.io/github/forks/yourusername/yourprojectname)](https://github.com/yourusername/yourprojectname/network/members)
+  [![License](https://img.shields.io/github/license/zied-snoussi/nestjs-mongoose-setup)](https://github.com/zied-snoussi/nestjs-mongoose-setup/blob/main/LICENSE)
+  [![Issues](https://img.shields.io/github/issues/zied-snoussi/nestjs-mongoose-setup)](https://github.com/zied-snoussi/nestjs-mongoose-setup/issues)
+  [![Stars](https://img.shields.io/github/stars/zied-snoussi/nestjs-mongoose-setup)](https://github.com/zied-snoussi/nestjs-mongoose-setup/stargazers)
+  [![Forks](https://img.shields.io/github/forks/zied-snoussi/nestjs-mongoose-setup)](https://github.com/zied-snoussi/nestjs-mongoose-setup/network/members)
 
 </div>
 
