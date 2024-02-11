@@ -5,7 +5,13 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   // The NestFactory.create() method is used to create an instance of the Nest application.
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist:true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  )
   // The app.listen() method is used to start the Nest application on port 5000.
   await app.listen(5000);
 }
