@@ -94,6 +94,16 @@ export class UpdateUserDto {
     @IsOptional()
     @IsString()
     password?: string;
+
+    @ApiProperty({
+        type: String,
+        description: 'Email of the user',
+        example: 'newpassword123',
+        required: false,
+    })
+    @IsOptional()
+    @IsString()
+    newPassword?: string;
 }
 
 export class UserResponseDto {

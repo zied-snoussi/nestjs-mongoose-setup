@@ -47,12 +47,25 @@ export class UserService {
     async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
         const user = await this.userModel.findById(id);
         if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-
-        // Check if the provided password matches the user's password
-        if (bcrypt.compareSync(updateUserDto.password, user.password) === false) throw new HttpException('Password is incorrect', HttpStatus.UNPROCESSABLE_ENTITY);
-
-        // Update the user
-        return await this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true });
+        if (updateUserDto.password) {
+            if (await bcrypt.compare(updateUserDto.password, user.password)) {
+                if (updateUserDto.newPassword !== undefined && updateUserDto.newPassword !== null) {
+                    if (updateUserDto.newPassword === '' || updateUserDto.newPassword.length < 6) throw new HttpException('Password must be at least 6 characters long', HttpStatus.UNPROCESSABLE_ENTITY);
+                    else {
+                        const salt = bcrypt.genSaltSync(10);
+                        const hash = bcrypt.hashSync(updateUserDto.newPassword, salt);
+                        delete updateUserDto.newPassword;
+                        updateUserDto.password = hash;
+                    }
+                } else {
+                    delete updateUserDto.password;
+                }
+                // Update the user
+                return await this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true });
+            } else {
+                throw new HttpException('Password is incorrect', HttpStatus.UNAUTHORIZED);
+            }
+        }
     }
 
     // Method to delete a user

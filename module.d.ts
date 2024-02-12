@@ -7,5 +7,6 @@ declare namespace NodeJs {
         MONGO_port: string
         JWT_SECRET_KEY: string
         JWT_SECRET_KEY: string;
+        ROLES_KEY: string;
     }
 }
