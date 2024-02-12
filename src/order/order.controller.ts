@@ -4,6 +4,9 @@ import { OrderService } from "./order.service"; // Import the OrderService from 
 import mongoose from "mongoose"; // Import mongoose for ObjectId validation.
 import { JwtGuard } from "../guards/jwt.guards"; // Import the JwtGuard from the '../guards/jwt.guards' file.
 import { ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger"; // Import Swagger decorators.
+import { RolesGuard } from "src/guards/roles.guards";
+import { Roles } from "src/decorators/roles.decorator";
+import { Role } from "src/enums/role.enum";
 
 @ApiTags('orders') // Decorator to group API under 'orders' tag in Swagger UI.
 @Controller('orders') // Decorator to define the controller with '/orders' route.
@@ -11,7 +14,8 @@ export class OrderController {
     constructor(private orderService: OrderService) { } // Constructor with OrderService injection.
 
     @Post() // Decorator to define a POST endpoint for creating an order.
-    @UseGuards(JwtGuard) // Use JwtGuard for authorization.
+    @UseGuards(JwtGuard, RolesGuard) // Apply JwtGuard and RolesGuard to protect this endpoint.
+    @Roles([Role.Admin]) // Apply the 'admin' role to this endpoint.
     @UsePipes(new ValidationPipe()) // Use validation pipe for input validation.
     @ApiCreatedResponse({ description: 'Order created successfully.', type: OrderResponseDto }) // Swagger response documentation.
     @ApiBadRequestResponse({ description: 'Invalid data provided.' }) // Swagger response documentation.
@@ -21,7 +25,8 @@ export class OrderController {
     }
 
     @Get() // Decorator to define a GET endpoint for retrieving all orders.
-    @UseGuards(JwtGuard) // Use JwtGuard for authorization.
+    @UseGuards(JwtGuard, RolesGuard) // Apply JwtGuard and RolesGuard to protect this endpoint.
+    @Roles([Role.Admin,Role.Manager]) // Apply the 'admin' role to this endpoint.
     @ApiOkResponse({ description: 'List of all orders.', type: [OrderResponseDto] }) // Swagger response documentation.
     async getAllOrders(): Promise<OrderResponseDto[]> { // Async handler for retrieving all orders.
         const orders = await this.orderService.getAllOrders(); // Call the service to retrieve all orders.
@@ -30,10 +35,11 @@ export class OrderController {
     }
 
     @Get(':id') // Decorator to define a GET endpoint for retrieving an order by ID.
-    @UseGuards(JwtGuard) // Use JwtGuard for authorization.
+    @UseGuards(JwtGuard, RolesGuard) // Apply JwtGuard and RolesGuard to protect this endpoint.
+    @Roles([Role.Admin,Role.Manager]) // Apply the 'admin' role to this endpoint.
     @ApiOkResponse({ description: 'Order found successfully.', type: OrderResponseDto }) // Swagger response documentation.
     @ApiNotFoundResponse({ description: 'Order not found.' }) // Swagger response documentation.
-    async getOrderById(@Param('id') id: string): Promise<OrderResponseDto> { // Async handler for retrieving an order by ID.
+    async getOrder(@Param('id') id: string): Promise<OrderResponseDto> { // Async handler for retrieving an order by ID.
         const isValid = mongoose.Types.ObjectId.isValid(id); // Check if the provided ID is a valid ObjectId.
         if (!isValid) throw new HttpException('Invalid order id', 400); // Throw an error if the ID is invalid.
         const order = await this.orderService.getOrderById(id); // Call the service to retrieve the order by ID.
@@ -42,7 +48,8 @@ export class OrderController {
     }
 
     @Patch(':id') // Decorator to define a PATCH endpoint for updating an order by ID.
-    @UseGuards(JwtGuard) // Use JwtGuard for authorization.
+    @UseGuards(JwtGuard, RolesGuard) // Apply JwtGuard and RolesGuard to protect this endpoint.
+    @Roles([Role.Admin]) // Apply the 'admin' role to this endpoint.
     @UsePipes(new ValidationPipe()) // Use validation pipe for input validation.
     @ApiOkResponse({ description: 'Order updated successfully.', type: OrderResponseDto }) // Swagger response documentation.
     @ApiNotFoundResponse({ description: 'Order not found.' }) // Swagger response documentation.
@@ -55,7 +62,8 @@ export class OrderController {
     }
 
     @Delete(':id') // Decorator to define a DELETE endpoint for deleting an order by ID.
-    @UseGuards(JwtGuard) // Use JwtGuard for authorization.
+    @UseGuards(JwtGuard, RolesGuard) // Apply JwtGuard and RolesGuard to protect this endpoint.
+    @Roles([Role.Admin]) // Apply the 'admin' role to this endpoint.
     @ApiOkResponse({ description: 'Order deleted successfully.' }) // Swagger response documentation.
     @ApiNotFoundResponse({ description: 'Order not found.' }) // Swagger response documentation.
     async deleteOrder(@Param('id') id: string) { // Async handler for deleting an order by ID.

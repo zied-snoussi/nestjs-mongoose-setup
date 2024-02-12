@@ -3,9 +3,12 @@ import { CreateUserDto, UpdateUserDto, UserListResponseDto, UserResponseDto } fr
 import { UserService } from "./user.service"; // Import UserService to handle user-related operations.
 import mongoose from "mongoose"; // Import mongoose for ObjectId validation.
 import { LoginDto } from "./dto/Auth.dto"; // Import DTO for user login.
-import { ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger"; // Import Swagger decorators for API documentation.
+import { ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiForbiddenResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger"; // Import Swagger decorators for API documentation.
 import { JwtGuard } from "src/guards/jwt.guards"; // Import JwtGuard for JWT token validation.
 import { RefreshJwtGuard } from "src/guards/refresh.guard"; // Import RefreshJwtGuard for token refreshing.
+import { Roles } from "src/decorators/roles.decorator";
+import { RolesGuard } from "src/guards/roles.guards";
+import { Role } from "src/enums/role.enum";
 
 @ApiTags('users') // Tag the controller with 'users' for Swagger documentation.
 @Controller('users') // Controller handling user-related endpoints.
@@ -13,7 +16,8 @@ export class UserController {
     constructor(private userService: UserService) { }
 
     @Post() // HTTP POST method to create a new user.
-    @UseGuards(JwtGuard) // Apply JwtGuard to protect this endpoint.
+    @UseGuards(JwtGuard, RolesGuard) // Apply JwtGuard and RolesGuard to protect this endpoint.
+    @Roles([Role.Admin]) // Apply the 'admin' role to this endpoint.    
     @UsePipes(new ValidationPipe()) // Apply ValidationPipe for input validation.
     @ApiCreatedResponse({ description: 'User created successfully.', type: UserResponseDto }) // Swagger response documentation.
     @ApiBadRequestResponse({ description: 'Invalid data provided.' }) // Swagger response documentation.
@@ -24,8 +28,10 @@ export class UserController {
         return newUser;
     }
 
-    @UseGuards(JwtGuard) // Apply JwtGuard to protect this endpoint.
+    @UseGuards(JwtGuard, RolesGuard) // Apply JwtGuard and RolesGuard to protect this endpoint.
+    @Roles([Role.Admin, Role.Manager]) // Apply the 'admin' role to this endpoint.
     @Get() // HTTP GET method to retrieve all users.
+    @ApiForbiddenResponse({ description: 'Forbidden.' }) // Swagger response documentation.
     @ApiOkResponse({ description: 'List of all users.', type: UserListResponseDto }) // Swagger response documentation.
     async getAllUsers(): Promise<UserListResponseDto> {
         const users = await this.userService.getAllUsers();
@@ -33,7 +39,8 @@ export class UserController {
         return users;
     }
 
-    @UseGuards(JwtGuard) // Apply JwtGuard to protect this endpoint.
+    @UseGuards(JwtGuard, RolesGuard) // Apply JwtGuard and RolesGuard to protect this endpoint.
+    @Roles([Role.Admin, Role.Manager]) // Apply the 'admin' role to this endpoint.
     @Get(':id') // HTTP GET method to retrieve a user by ID.
     @ApiOkResponse({ description: 'User found successfully.', type: UserResponseDto }) // Swagger response documentation.
     @ApiNotFoundResponse({ description: 'User not found.' }) // Swagger response documentation.
@@ -46,7 +53,8 @@ export class UserController {
     }
 
     @Patch(':id') // HTTP PATCH method to update a user by ID.
-    @UseGuards(JwtGuard) // Apply JwtGuard to protect this endpoint.
+    @UseGuards(JwtGuard, RolesGuard) // Apply JwtGuard and RolesGuard to protect this endpoint.
+    @Roles([Role.Admin]) // Apply the 'admin' role to this endpoint.
     @UsePipes(new ValidationPipe()) // Apply ValidationPipe for input validation.
     @ApiOkResponse({ description: 'User updated successfully.', type: UserResponseDto }) // Swagger response documentation.
     @ApiNotFoundResponse({ description: 'User not found.' }) // Swagger response documentation.
@@ -59,7 +67,8 @@ export class UserController {
     }
 
     @Delete(':id') // HTTP DELETE method to delete a user by ID.
-    @UseGuards(JwtGuard) // Apply JwtGuard to protect this endpoint.
+    @UseGuards(JwtGuard, RolesGuard) // Apply JwtGuard and RolesGuard to protect this endpoint.
+    @Roles([Role.Admin]) // Apply the 'admin' role to this endpoint.
     @ApiOkResponse({ description: 'User deleted successfully.' }) // Swagger response documentation.
     @ApiNotFoundResponse({ description: 'User not found.' }) // Swagger response documentation.
     async deleteUser(@Param('id') id: string) {

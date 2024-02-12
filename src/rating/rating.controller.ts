@@ -4,6 +4,9 @@ import mongoose from "mongoose"; // Import mongoose for working with MongoDB Obj
 import { RatingService } from "./rating.service"; // Import the RatingService from the rating.service file.
 import { JwtGuard } from "../guards/jwt.guards"; // Import the JwtGuard from the guards folder.
 import { ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger"; // Import Swagger decorators for documenting the API.
+import { RolesGuard } from "src/guards/roles.guards";
+import { Roles } from "src/decorators/roles.decorator";
+import { Role } from "src/enums/role.enum";
 
 @ApiTags('ratings') // Add 'ratings' tag to group API under this category in Swagger UI.
 @Controller('ratings') // Define the controller's base route.
@@ -11,8 +14,8 @@ export class RatingController {
     constructor(private ratingService: RatingService) { } // Inject RatingService into the controller.
 
     @Post() // Handle HTTP POST requests to create a new rating.
-    @UseGuards(JwtGuard) // Protect the route using JwtGuard.
-    @UsePipes(new ValidationPipe()) // Validate request payload using ValidationPipe.
+    @UseGuards(JwtGuard, RolesGuard) // Apply JwtGuard and RolesGuard to protect this endpoint.
+   @Roles([Role.Admin]) // Apply the 'admin' role to this endpoint.    @UsePipes(new ValidationPipe()) // Validate request payload using ValidationPipe.
     @ApiCreatedResponse({ description: 'Rating created successfully.', type: RatingResponseDto }) // Document successful response.
     @ApiBadRequestResponse({ description: 'Invalid data provided.' }) // Document bad request response.
     @ApiBearerAuth() // Specify that JWT token is required for this endpoint.
@@ -21,7 +24,8 @@ export class RatingController {
     }
 
     @Get() // Handle HTTP GET requests to retrieve all ratings.
-    @UseGuards(JwtGuard) // Protect the route using JwtGuard.
+    @UseGuards(JwtGuard, RolesGuard) // Apply JwtGuard and RolesGuard to protect this endpoint.
+    @Roles([Role.Admin,Role.Manager]) // Apply the 'admin' role to this endpoint.
     @ApiOkResponse({ description: 'List of all ratings.', type: [RatingResponseDto] }) // Document successful response.
     async getAllRatings(): Promise<RatingResponseDto[]> { // Define route handler for retrieving all ratings.
         const ratings = await this.ratingService.getAllRatings(); // Call the RatingService method to fetch all ratings.
@@ -30,7 +34,8 @@ export class RatingController {
     }
 
     @Get(':id') // Handle HTTP GET requests to retrieve a rating by ID.
-    @UseGuards(JwtGuard) // Protect the route using JwtGuard.
+    @UseGuards(JwtGuard, RolesGuard) // Apply JwtGuard and RolesGuard to protect this endpoint.
+    @Roles([Role.Admin,Role.Manager]) // Apply the 'admin' role to this endpoint.
     @ApiOkResponse({ description: 'Rating found successfully.', type: RatingResponseDto }) // Document successful response.
     @ApiNotFoundResponse({ description: 'Rating not found.' }) // Document not found response.
     async getRatingById(@Param('id') id: string): Promise<RatingResponseDto> { // Define route handler for retrieving a rating by ID.
@@ -42,8 +47,8 @@ export class RatingController {
     }
 
     @Patch(':id') // Handle HTTP PATCH requests to update a rating by ID.
-    @UseGuards(JwtGuard) // Protect the route using JwtGuard.
-    @UsePipes(new ValidationPipe()) // Validate request payload using ValidationPipe.
+    @UseGuards(JwtGuard, RolesGuard) // Apply JwtGuard and RolesGuard to protect this endpoint.
+   @Roles([Role.Admin]) // Apply the 'admin' role to this endpoint.    @UsePipes(new ValidationPipe()) // Validate request payload using ValidationPipe.
     @ApiOkResponse({ description: 'Rating updated successfully.', type: RatingResponseDto }) // Document successful response.
     @ApiNotFoundResponse({ description: 'Rating not found.' }) // Document not found response.
     async updateRating(@Param('id') id: string, @Body() updateRatingDto: UpdateRatingDto): Promise<RatingResponseDto> { // Define route handler for updating a rating by ID.
@@ -55,8 +60,8 @@ export class RatingController {
     }
 
     @Delete(':id') // Handle HTTP DELETE requests to delete a rating by ID.
-    @UseGuards(JwtGuard) // Protect the route using JwtGuard.
-    @ApiOkResponse({ description: 'Rating deleted successfully.' }) // Document successful response.
+    @UseGuards(JwtGuard, RolesGuard) // Apply JwtGuard and RolesGuard to protect this endpoint.
+   @Roles([Role.Admin]) // Apply the 'admin' role to this endpoint.    @ApiOkResponse({ description: 'Rating deleted successfully.' }) // Document successful response.
     @ApiNotFoundResponse({ description: 'Rating not found.' }) // Document not found response.
     async deleteRating(@Param('id') id: string) { // Define route handler for deleting a rating by ID.
         const isValid = mongoose.Types.ObjectId.isValid(id); // Check if the provided ID is a valid ObjectId.
