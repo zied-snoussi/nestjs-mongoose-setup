@@ -6,7 +6,7 @@ import { ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiNotFoundRe
 import { JwtGuard } from "../guards/jwt.guards"; // Import JwtGuard for JWT token authentication.
 import { Roles } from "../decorators/roles.decorator";
 import { RolesGuard } from "../guards/roles.guards";
-import { Role } from "src/enums/role.enum";
+import { Role } from "../enums/role.enum";
 
 @ApiTags('products') // Decorator to group API under 'products' tag in Swagger UI.
 @Controller('products') // Decorator to define the controller path.

@@ -3,7 +3,6 @@ import { InjectModel } from "@nestjs/mongoose"; // Import the InjectModel decora
 import { Model } from "mongoose"; // Import the Model type from the mongoose library.
 import { User } from "../schema/User.schema"; // Import the User schema from the schemas folder.
 import { CreateUserDto, UpdateUserDto, UserListResponseDto, UserResponseDto } from "./dto/User.dto";
-import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from 'bcrypt';
 
 // The UserService class is a provider that is injected into the UsersModule.
@@ -12,7 +11,6 @@ export class UserService {
     // The @InjectModel() decorator is used to inject the User model into the UserService class.
     constructor(
         @InjectModel(User.name) private userModel: Model<User>,
-        private jwtService: JwtService
     ) { }
 
     // Method to create a new user
