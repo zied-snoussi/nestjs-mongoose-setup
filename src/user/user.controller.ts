@@ -1,11 +1,9 @@
-import { Body, Controller, Delete, Get, HttpException, Param, Patch, Post, Request, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common"; // Import necessary decorators from the @nestjs/common library.
+import { Body, Controller, Delete, Get, HttpException, Param, Patch, Post, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common"; // Import necessary decorators from the @nestjs/common library.
 import { CreateUserDto, UpdateUserDto, UserListResponseDto, UserResponseDto } from "./dto/User.dto"; // Import DTOs for user operations.
 import { UserService } from "./user.service"; // Import UserService to handle user-related operations.
 import mongoose from "mongoose"; // Import mongoose for ObjectId validation.
-import { LoginDto } from "./dto/Auth.dto"; // Import DTO for user login.
 import { ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiForbiddenResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger"; // Import Swagger decorators for API documentation.
 import { JwtGuard } from "src/guards/jwt.guards"; // Import JwtGuard for JWT token validation.
-import { RefreshJwtGuard } from "src/guards/refresh.guard"; // Import RefreshJwtGuard for token refreshing.
 import { Roles } from "src/decorators/roles.decorator";
 import { RolesGuard } from "src/guards/roles.guards";
 import { Role } from "src/enums/role.enum";
@@ -79,22 +77,4 @@ export class UserController {
         return "User deleted successfully";
     }
 
-    @Post('register') // HTTP POST method to register a new user.
-    @ApiCreatedResponse({ description: 'User registered successfully.', type: UserResponseDto }) // Swagger response documentation.
-    async register(@Body() dto: CreateUserDto) {
-        return await this.userService.createUser(dto);
-    }
-
-    @Post('login') // HTTP POST method to log in a user.
-    @ApiOkResponse({ description: 'User logged in successfully.' }) // Swagger response documentation.
-    async login(@Body() dto: LoginDto) {
-        return await this.userService.login(dto);
-    }
-
-    @UseGuards(RefreshJwtGuard) // Apply RefreshJwtGuard to protect this endpoint.
-    @Post('refresh') // HTTP POST method to refresh JWT tokens.
-    @ApiOkResponse({ description: 'Token refreshed successfully.' }) // Swagger response documentation.
-    async refresh(@Request() req) {
-        return await this.userService.refreshToken(req.user)
-    }
 }

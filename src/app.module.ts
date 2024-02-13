@@ -5,6 +5,7 @@ import { UserModule } from './user/user.module';
 import { ProductModule } from './product/product.module';
 import { OrderModule } from './order/order.module';
 import { RatingModule } from './rating/rating.module';
+import { AuthModule } from './auth/auth.module';
 
 // The AppModule class is the root module of the application.
 @Module({
@@ -20,6 +21,7 @@ import { RatingModule } from './rating/rating.module';
     ProductModule,
     OrderModule,
     RatingModule,
+    AuthModule,
   ],
   controllers: [], // No controllers are defined in the root module
   providers: [],   // No providers are defined in the root module
