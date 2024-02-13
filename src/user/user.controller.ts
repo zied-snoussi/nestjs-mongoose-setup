@@ -3,10 +3,10 @@ import { CreateUserDto, UpdateUserDto, UserListResponseDto, UserResponseDto } fr
 import { UserService } from "./user.service"; // Import UserService to handle user-related operations.
 import mongoose from "mongoose"; // Import mongoose for ObjectId validation.
 import { ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiForbiddenResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger"; // Import Swagger decorators for API documentation.
-import { JwtGuard } from "src/guards/jwt.guards"; // Import JwtGuard for JWT token validation.
-import { Roles } from "src/decorators/roles.decorator";
-import { RolesGuard } from "src/guards/roles.guards";
-import { Role } from "src/enums/role.enum";
+import { JwtGuard } from "../guards/jwt.guards"; // Import JwtGuard for JWT token validation.
+import { Roles } from "../decorators/roles.decorator";
+import { RolesGuard } from "../guards/roles.guards";
+import { Role } from "../enums/role.enum";
 
 @ApiTags('users') // Tag the controller with 'users' for Swagger documentation.
 @Controller('users') // Controller handling user-related endpoints.

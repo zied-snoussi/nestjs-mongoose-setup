@@ -4,9 +4,9 @@ import { OrderService } from "./order.service"; // Import the OrderService from 
 import mongoose from "mongoose"; // Import mongoose for ObjectId validation.
 import { JwtGuard } from "../guards/jwt.guards"; // Import the JwtGuard from the '../guards/jwt.guards' file.
 import { ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger"; // Import Swagger decorators.
-import { RolesGuard } from "src/guards/roles.guards";
-import { Roles } from "src/decorators/roles.decorator";
-import { Role } from "src/enums/role.enum";
+import { RolesGuard } from "../guards/roles.guards";
+import { Roles } from "../decorators/roles.decorator";
+import { Role } from "../enums/role.enum";
 
 @ApiTags('orders') // Decorator to group API under 'orders' tag in Swagger UI.
 @Controller('orders') // Decorator to define the controller with '/orders' route.

@@ -4,9 +4,9 @@ import mongoose from "mongoose"; // Import mongoose for working with MongoDB Obj
 import { RatingService } from "./rating.service"; // Import the RatingService from the rating.service file.
 import { JwtGuard } from "../guards/jwt.guards"; // Import the JwtGuard from the guards folder.
 import { ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger"; // Import Swagger decorators for documenting the API.
-import { RolesGuard } from "src/guards/roles.guards";
-import { Roles } from "src/decorators/roles.decorator";
-import { Role } from "src/enums/role.enum";
+import { RolesGuard } from "../guards/roles.guards";
+import { Roles } from "../decorators/roles.decorator";
+import { Role } from "../enums/role.enum";
 
 @ApiTags('ratings') // Add 'ratings' tag to group API under this category in Swagger UI.
 @Controller('ratings') // Define the controller's base route.
