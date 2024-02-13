@@ -3,7 +3,6 @@ import { InjectModel } from "@nestjs/mongoose"; // Import the InjectModel decora
 import { Model } from "mongoose"; // Import the Model type from the mongoose library.
 import { User } from "../schema/User.schema"; // Import the User schema from the schemas folder.
 import { CreateUserDto, UpdateUserDto, UserListResponseDto, UserResponseDto } from "./dto/User.dto";
-import { LoginDto } from "./dto/Auth.dto";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from 'bcrypt';
 
@@ -76,57 +75,8 @@ export class UserService {
         // Delete the user
         return await this.userModel.findByIdAndDelete(id);
     }
-
-    // Method to log in a user
-    async login(dto: LoginDto) {
-        const user = await this.validateUser(dto);
-        const payload = {
-            username: user.username,
-            sub: user._id,
-        };
-
-        // Generate access and refresh tokens
-        return {
-            user,
-            backendTokens: {
-                accessToken: await this.jwtService.signAsync(payload, {
-                    expiresIn: '1h',
-                    secret: process.env.JWT_SECRET_KEY,
-                }),
-                refreshToken: await this.jwtService.signAsync(payload, {
-                    expiresIn: '7d',
-                    secret: process.env.JWT_REFRESH_TOKEN,
-                }),
-            }
-        };
-    }
-
-    // Method to validate user credentials
-    async validateUser(dto: LoginDto) {
-        const user = await this.userModel.findOne({ email: dto.email });
-        if (user && (await bcrypt.compare(dto.password, user.password))) {
-            // Omit the password from the result
-            const { password, ...result } = user;
-            return result;
-        }
-        throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
-    }
-
-    // Method to refresh tokens
-    async refreshToken(user: any) {
-        const payload = {
-            username: user.username,
-            sub: user.sub,
-        };
-        return {
-            accessToken: await this.jwtService.signAsync(payload, {
-                expiresIn: '1h',
-                secret: process.env.JWT_SECRET_KEY,
-            }),
-            refreshToken: await this.jwtService.signAsync(payload, {
-                expiresIn: '7d',
-                secret: process.env.JWT_REFRESH_TOKEN,
-            }),
-        }
+    // Method to find a user by email
+    async findUserByEmail(email: string): Promise<User> {
+        return await this.userModel.findOne({ email });
     }
 }
