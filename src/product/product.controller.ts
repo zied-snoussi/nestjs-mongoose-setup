@@ -28,7 +28,7 @@ export class ProductController {
     @UseGuards(JwtGuard, RolesGuard) // Apply JwtGuard and RolesGuard to protect this endpoint.
     @Roles([Role.Admin, Role.Manager]) // Apply the 'admin' role to this endpoint.
     @ApiOkResponse({ description: 'List of all products.', type: [ProductResponseDto] }) // Swagger documentation for successful retrieval response.
-    async getAllProducts(): Promise<ProductResponseDto[]> { // Asynchronous method to handle retrieval of all products.
+    async getAllProducts(){ // Asynchronous method to handle retrieval of all products.
         const products = await this.productService.getAllProducts(); // Call ProductService to get all products.
         if (!products) throw new HttpException('No products found', 404); // Throw an exception if no products are found.
         return products; // Return the list of products.
@@ -39,7 +39,7 @@ export class ProductController {
     @Roles([Role.Admin, Role.Manager]) // Apply the 'admin' role to this endpoint.
     @ApiOkResponse({ description: 'Product found successfully.', type: ProductResponseDto }) // Swagger documentation for successful retrieval response.
     @ApiNotFoundResponse({ description: 'Product not found.' }) // Swagger documentation for product not found response.
-    async getProductById(@Param('id') id: string): Promise<ProductResponseDto> { // Asynchronous method to handle retrieval of a product by ID.
+    async getProductById(@Param('id') id: string){ // Asynchronous method to handle retrieval of a product by ID.
         const isValid = mongoose.Types.ObjectId.isValid(id); // Check if the provided ID is a valid MongoDB object ID.
         if (!isValid) throw new HttpException('Invalid product id', 400); // Throw an exception if the ID is invalid.
         const product = await this.productService.getProductById(id); // Call ProductService to get the product by ID.
@@ -53,7 +53,7 @@ export class ProductController {
     @UsePipes(new ValidationPipe()) // Use ValidationPipe for payload validation.
     @ApiOkResponse({ description: 'Product updated successfully.', type: ProductResponseDto }) // Swagger documentation for successful update response.
     @ApiNotFoundResponse({ description: 'Product not found.' }) // Swagger documentation for product not found response.
-    async updateProduct(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto): Promise<ProductResponseDto> { // Asynchronous method to handle updating a product by ID.
+    async updateProduct(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) { // Asynchronous method to handle updating a product by ID.
         const isValid = mongoose.Types.ObjectId.isValid(id); // Check if the provided ID is a valid MongoDB object ID.
         if (!isValid) throw new HttpException('Invalid product id', 400); // Throw an exception if the ID is invalid.
         const product = await this.productService.updateProduct(id, updateProductDto); // Call ProductService to update the product.

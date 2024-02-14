@@ -5,6 +5,8 @@ import { CreateRatingDto, RatingResponseDto, UpdateRatingDto } from './dto/Ratin
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Rating, RatingSchema } from '../schema/Rating.schema';
+import { ConfigModule } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 describe('RatingController', () => {
   let controller: RatingController;
   let ratingService: RatingService;
@@ -12,6 +14,11 @@ describe('RatingController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
+        ConfigModule.forRoot({
+          envFilePath: '.env.test.local', // Load environment variables from local file
+        }),
+        // Connect to MongoDB database using Mongoose
+        MongooseModule.forRoot(`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_NAME}`),
         MongooseModule.forFeature([{ // Import the Rating model and associate it with the RatingSchema.
             name: Rating.name,
             schema: RatingSchema,
@@ -19,6 +26,7 @@ describe('RatingController', () => {
     ],
       controllers: [RatingController],
       providers: [
+        JwtService,
         {
           provide: RatingService,
           useValue: {
@@ -55,7 +63,7 @@ describe('RatingController', () => {
         updated_at: new Date(),
       };
 
-      ratingService.createRating.prototype.mockResolvedValue(createdRating);
+      ratingService.createRating.prototype.mockResolvedValue(createdRating as any);
 
       const result = await controller.createRating(createRatingDto);
 
@@ -71,7 +79,7 @@ describe('RatingController', () => {
         comment: 'This is a great product',
       };
 
-      ratingService.createRating.prototype.mockResolvedValue(null);
+      ratingService.createRating.prototype.mockResolvedValue(null as any);
 
       await expect(controller.createRating(createRatingDto)).rejects.toThrow(new HttpException('Rating not created', HttpStatus.NOT_FOUND));
     });
@@ -91,7 +99,7 @@ describe('RatingController', () => {
         },
       ];
 
-      ratingService.getAllRatings.prototype.mockResolvedValue(ratings);
+      ratingService.getAllRatings.prototype.mockResolvedValue(ratings as any);
 
       const result = await controller.getAllRatings();
 
@@ -100,7 +108,7 @@ describe('RatingController', () => {
     });
 
     it('should throw error if no ratings found', async () => {
-      ratingService.getAllRatings.prototype.mockResolvedValue(null);
+      ratingService.getAllRatings.prototype.mockResolvedValue(null as any);
 
       await expect(controller.getAllRatings()).rejects.toThrow(new HttpException('No ratings found', HttpStatus.NOT_FOUND));
     });
@@ -118,7 +126,7 @@ describe('RatingController', () => {
         updated_at: new Date(),
       };
 
-      ratingService.getRatingById.prototype.mockResolvedValue(rating);
+      ratingService.getRatingById.prototype.mockResolvedValue(rating as any);
 
       const result = await controller.getRatingById('rating_id');
 
@@ -127,7 +135,7 @@ describe('RatingController', () => {
     });
 
     it('should throw error if no rating found', async () => {
-      ratingService.getRatingById.prototype.mockResolvedValue(null);
+      ratingService.getRatingById.prototype.mockResolvedValue(null as any);
 
       await expect(controller.getRatingById('rating_id')).rejects.toThrow(new HttpException('No rating found', HttpStatus.NOT_FOUND));
     });
@@ -149,7 +157,7 @@ describe('RatingController', () => {
         updated_at: new Date(),
       };
 
-      ratingService.updateRating.prototype.mockResolvedValue(rating);
+      ratingService.updateRating.prototype.mockResolvedValue(rating as any);
 
       const result = await controller.updateRating('rating_id', updateRatingDto);
 
@@ -158,7 +166,7 @@ describe('RatingController', () => {
     });
 
     it('should throw error if no rating found', async () => {
-      ratingService.updateRating.prototype.mockResolvedValue(null);
+      ratingService.updateRating.prototype.mockResolvedValue(null as any);
 
       await expect(controller.updateRating('rating_id', { rating: 5, comment: 'This is a great product' })).rejects.toThrow(new HttpException('No rating found', HttpStatus.NOT_FOUND));
     });
@@ -166,7 +174,7 @@ describe('RatingController', () => {
 
   describe('deleteRating', () => {
     it('should delete a rating by id', async () => {
-      ratingService.deleteRating.prototype.mockResolvedValue('Rating deleted successfully');
+      ratingService.deleteRating.prototype.mockResolvedValue('Rating deleted successfully' as any);
 
       const result = await controller.deleteRating('rating_id');
 
@@ -175,7 +183,7 @@ describe('RatingController', () => {
     });
 
     it('should throw error if no rating found', async () => {
-      ratingService.deleteRating.prototype.mockResolvedValue(null);
+      ratingService.deleteRating.prototype.mockResolvedValue(null as any);
 
       await expect(controller.deleteRating('rating_id')).rejects.toThrow(new HttpException('No rating found', HttpStatus.NOT_FOUND));
     });

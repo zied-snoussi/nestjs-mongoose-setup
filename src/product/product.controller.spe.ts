@@ -5,20 +5,26 @@ import { CreateProductDto, ProductResponseDto, UpdateProductDto } from './dto/Pr
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Product, ProductSchema } from '../schema/Product.schema';
+import { ConfigModule } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+
 describe('ProductController', () => {
   let controller: ProductController;
   let productService: ProductService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [ // Define the module imports.
-      MongooseModule.forFeature([{ // Import the MongooseModule with the specified features.
-          name: Product.name, // Specify the name of the model.
-          schema: ProductSchema, // Specify the schema of the model.
-      }])
-  ],
+      imports: [
+        ConfigModule.forRoot({
+          envFilePath: '.env.test.local', // Load environment variables from local file
+        }),
+        MongooseModule.forRoot(`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_NAME}`),
+        MongooseModule.forFeature([{ name: Product.name, schema: ProductSchema }]),
+      ],
       controllers: [ProductController],
       providers: [
+        ProductService,
+        JwtService, // Provide JwtService here
         {
           provide: ProductService,
           useValue: {
@@ -48,14 +54,14 @@ describe('ProductController', () => {
         price: '100',
         category: 'Test Category',
       };
-      const createdProduct: ProductResponseDto = {
+      const createdProduct= {
         _id: 'test_id',
         ...createProductDto,
         created_at: new Date(),
         updated_at: new Date(),
       };
 
-      productService.createProduct.prototype.mockResolvedValue(createdProduct);
+      jest.spyOn(productService, 'createProduct').mockResolvedValue(createdProduct as any);
 
       const result = await controller.createProduct(createProductDto);
 
@@ -77,7 +83,7 @@ describe('ProductController', () => {
         },
       ];
 
-      productService.getAllProducts.prototype.mockResolvedValue(products);
+      jest.spyOn(productService, 'getAllProducts').mockResolvedValue(products as any);
 
       const result = await controller.getAllProducts();
 
@@ -97,7 +103,7 @@ describe('ProductController', () => {
         updated_at: new Date(),
       };
 
-      productService.getProductById.prototype.mockResolvedValue(product);
+      jest.spyOn(productService, 'getProductById').mockResolvedValue(product as any);
 
       const result = await controller.getProductById('test_id');
 
@@ -105,7 +111,7 @@ describe('ProductController', () => {
     });
 
     it('should throw an error if product not found', async () => {
-      productService.getProductById.prototype.mockResolvedValue(null);
+      jest.spyOn(productService, 'getProductById').mockResolvedValue(null);
 
       await expect(controller.getProductById('invalid_id')).rejects.toThrow(
         new HttpException('Product not found', HttpStatus.NOT_FOUND),
@@ -128,7 +134,7 @@ describe('ProductController', () => {
         updated_at: new Date(),
       };
 
-      productService.updateProduct.prototype.mockResolvedValue(updatedProduct);
+      jest.spyOn(productService, 'updateProduct').mockResolvedValue(updatedProduct as any);
 
       const result = await controller.updateProduct('test_id', updateProductDto);
 
@@ -142,7 +148,7 @@ describe('ProductController', () => {
         price: '100',
         category: 'Test Category',
       };
-      productService.updateProduct.prototype.mockResolvedValue(null);
+      jest.spyOn(productService, 'updateProduct').mockResolvedValue(null);
 
       await expect(controller.updateProduct('invalid_id', updateProductDto)).rejects.toThrow(
         new HttpException('Product not found', HttpStatus.NOT_FOUND),
@@ -152,7 +158,7 @@ describe('ProductController', () => {
 
   describe('deleteProduct', () => {
     it('should delete a product', async () => {
-      productService.deleteProduct.prototype.mockResolvedValue(true);
+      jest.spyOn(productService, 'deleteProduct').mockResolvedValue(true as any);
 
       const result = await controller.deleteProduct('test_id');
 
@@ -160,7 +166,7 @@ describe('ProductController', () => {
     });
 
     it('should throw an error if product not found', async () => {
-      productService.deleteProduct.prototype.mockResolvedValue(null);
+      jest.spyOn(productService, 'deleteProduct').mockResolvedValue(null);
 
       await expect(controller.deleteProduct('invalid_id')).rejects.toThrow(
         new HttpException('Product not found', HttpStatus.NOT_FOUND),

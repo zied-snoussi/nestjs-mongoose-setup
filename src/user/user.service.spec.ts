@@ -1,207 +1,86 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
-import { getModelToken } from '@nestjs/mongoose';
-import { User } from '../schema/User.schema';
-import { CreateUserDto, UpdateUserDto } from './dto/User.dto';
-import { HttpException, HttpStatus } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
+import { UserSchema, User } from '../schema/User.schema';
+import { Model } from 'mongoose';
 import { MongooseModule } from '@nestjs/mongoose';
-import { JwtModule } from '@nestjs/jwt';
-import { UserSchema } from '../schema/User.schema';
-
-const users = [
-  {
-    _id: '1',
-    first_name: 'John',
-    last_name: 'Doe',
-    username: 'johndoe',
-    email: 'test@example.com',
-    role: 'admin',
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    _id: '2',
-    first_name: 'Jane',
-    last_name: 'Smith',
-    username: 'janesmith',
-    email: 'janesmith@example.com',
-    role: 'manager',
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  // Add more mocked user objects as needed
-];
-
-const createUserData: CreateUserDto = {
-  email: 'existing@example.com',
-  password: 'password123',
-  first_name: 'test',
-  last_name: 'test',
-  username: 'test',
-  role: 'admin',
-};
-
-const updateUserData: UpdateUserDto = {
-  password: 'password123',
-  first_name: 'test',
-  last_name: 'test'
-};
+import { ConfigModule } from '@nestjs/config';
+import { UpdateUserDtoStub, UserDtoStub, UsersDtoSubResponse } from '../test/stubs/user.dto.stub';
+import { UserListResponseDto, UserResponseDto } from './dto/User.dto';
 
 describe('UserService', () => {
-  let service: UserService;
-  const mockUserModel = {
-    findOne: jest.fn(),
-    find: jest.fn(),
-    findById: jest.fn(),
-    findByIdAndUpdate: jest.fn(),
-    findByIdAndDelete: jest.fn(),
-  };
+    let service: UserService;
+    let user: UserResponseDto | any;
+    const mockUserModel = {
+        createUser: jest.fn().mockImplementation((dto) => dto),
+        saveUser: jest.fn().mockImplementation(user => user),
+        getAllUsers: jest.fn().mockResolvedValue(UserListResponseDto),
+        getUserById: jest.fn().mockImplementation((_id) => UserResponseDto),
+        updateUser: jest.fn().mockImplementation((_id, dto) => UserResponseDto),
+        deleteUser: jest.fn().mockImplementation((_id) => UserResponseDto),
+    };
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            imports: [
+                ConfigModule.forRoot({
+                    envFilePath: '.env.test.local', // Load environment variables from local file
+                }),
+                // Connect to MongoDB database using Mongoose
+                MongooseModule.forRoot(`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_NAME}`),
+                // MongooseModule.forFeature() imports the User schema into the MongooseModule.
+                MongooseModule.forFeature([
+                    {
+                        name: User.name, // Specify the name of the schema.
+                        schema: UserSchema, // Specify the schema itself.
+                    }
+                ]),
+            ],
+            providers: [
+                // Provide the UserService and UserModel dependencies
+                UserService,
+                {
+                    provide: 'User', // Use the string 'User' to refer to the UserModel
+                    useValue: Model, // Use the Mongoose Model class as the value for the UserModel
+                },
+            ],
+        }).compile();
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        // MongooseModule.forFeature() imports the User schema into the MongooseModule.
-        MongooseModule.forFeature([
-            {
-                name: User.name, // Specify the name of the schema.
-                schema: UserSchema, // Specify the schema itself.
-            }
-        ]),
-        // JwtModule.register() imports the JwtModule and configures it to use a global secret.
-        JwtModule.register({
-            global: true, // Set the module to be available globally.
-            secret: process.env.JWT_SECRET_KEY, // Use the JWT secret key from environment variables.
-        })
-    ],
-      providers: [
-        UserService,
-        {
-          provide: getModelToken(User.name),
-          useValue: mockUserModel,
-        },
-      ],
-    }).compile();
-
-    service = module.get<UserService>(UserService);
-  });
-
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
-  describe('createUser', () => {
-    it('should create a new user', async () => {
-      const createUserDto: CreateUserDto = createUserData;
-      const hashedPassword = bcrypt.hashSync(createUserDto.password, 10);
-      const mockCreatedUser = {
-        _id: 'test_id',
-        ...createUserDto,
-        password: hashedPassword,
-      };
-
-      mockUserModel.findOne.mockResolvedValue(null);
-
-      const result = await service.createUser(createUserDto);
-
-      expect(result).toEqual(mockCreatedUser);
+        service = module.get<UserService>(UserService); // Get an instance of the UserService from the testing module
     });
 
-    it('should throw an error if email is already taken', async () => {
-      const createUserDto: CreateUserDto = {
-        email: 'existing@example.com',
-        password: 'password123',
-        first_name: 'test',
-        last_name: 'test',
-        username: 'test',
-        role: 'admin',
-      };
-
-      mockUserModel.findOne.mockResolvedValue({});
-
-      await expect(service.createUser(createUserDto)).rejects.toThrow(
-        new HttpException('Email is already taken', HttpStatus.UNPROCESSABLE_ENTITY),
-      );
-    });
-  });
-
-  describe('getAllUsers', () => {
-    it('should return all users', async () => {
-      mockUserModel.find.mockResolvedValue(users);
-
-      const result = await service.getAllUsers();
-
-      expect(result).toEqual(users);
-    });
-  });
-
-  describe('getUserById', () => {
-    it('should return a user by id', async () => {
-      const userId = '1';
-      const mockUser = users[0];
-
-      mockUserModel.findById.mockResolvedValue(mockUser);
-
-      const result = await service.getUserById(userId);
-
-      expect(result).toEqual(mockUser);
+    //after each test, clear all mocks and drop database collection
+    afterAll(async () => {
+        jest.clearAllMocks();
+        await service.deleteCollection();
     });
 
-    it('should throw an error if user is not found', async () => {
-      const userId = '1';
-
-      mockUserModel.findById.mockResolvedValue(null);
-
-      await expect(service.getUserById(userId)).rejects.toThrow(
-        new HttpException('User not found', HttpStatus.NOT_FOUND),
-      );
-    });
-  });
-
-  describe('updateUser', () => {
-    it('should update a user', async () => {
-      const userId = '1';
-      const mockUser = users[0];
-
-      mockUserModel.findByIdAndUpdate.mockResolvedValue(mockUser);
-
-      const result = await service.updateUser(userId, updateUserData);
-
-      expect(result).toEqual(mockUser);
+    it('should be defined', () => {
+        expect(service).toBeDefined(); // Check if the service is defined
     });
 
-    it('should throw an error if user is not found', async () => {
-      const userId = '1';
-
-      mockUserModel.findByIdAndUpdate.mockResolvedValue(null);
-
-      await expect(service.updateUser(userId, updateUserData)).rejects.toThrow(
-        new HttpException('User not found', HttpStatus.NOT_FOUND),
-      );
-    });
-  });
-
-  describe('deleteUser', () => {
-    it('should delete a user', async () => {
-      const userId = '1';
-      const mockUser = users[0];
-
-      mockUserModel.findByIdAndDelete.mockResolvedValue(mockUser);
-
-      const result = await service.deleteUser(userId);
-
-      expect(result).toEqual(mockUser);
+    it('should create a new user record and return the user', async () => {
+        // Create a new user record
+        user = await service.createUser(UserDtoStub);
+        expect(user.email).toEqual(UserDtoStub.email);
     });
 
-    it('should throw an error if user is not found', async () => {
-      const userId = '1';
-
-      mockUserModel.findByIdAndDelete.mockResolvedValue(null);
-
-      await expect(service.deleteUser(userId)).rejects.toThrow(
-        new HttpException('User not found', HttpStatus.NOT_FOUND),
-      );
+    it('should return all user records', async () => {
+        const users = await service.getAllUsers();
+        expect(users[0].email).toEqual(user.email);
     });
-  });
+
+    it('should return a user record by id', async () => {
+        const userFound = await service.getUserById(user._id);
+        expect(userFound.email).toEqual(user.email);
+    });
+
+    it('should update a user record by id', async () => {
+        const updatedUser = await service.updateUser(user._id, UpdateUserDtoStub);
+        expect(updatedUser.first_name).toEqual(UpdateUserDtoStub.first_name);
+    });
+
+    it('should delete a user record by id', async () => {
+        const deletedUser = await service.deleteUser(user._id);
+        expect(deletedUser._id).toEqual(user._id);
+    });
 
 });

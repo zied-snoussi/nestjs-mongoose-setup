@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common"; // Import the Injectable decorator from the @nestjs/common library.
+import { HttpException, Injectable } from "@nestjs/common"; // Import the Injectable decorator from the @nestjs/common library.
 import { InjectModel } from "@nestjs/mongoose"; // Import the InjectModel decorator from the @nestjs/mongoose library.
 import { Model } from "mongoose"; // Import the Model type from the mongoose library.
 import { Product } from "../schema/Product.schema"; // Import the Product schema from the schema folder.
@@ -13,19 +13,27 @@ export class ProductService {
         return newProduct.save(); // Save the new product to the database and return the result.
     }
 
-    async getAllProducts(): Promise<ProductResponseDto[]> { // Method to retrieve all products.
-        return await this.productModel.find(); // Find all products in the database and return them.
+    async getAllProducts() { // Method to retrieve all products.
+        const products = await this.productModel.find(); // Retrieve all products from the database.
+        if (!products) throw new HttpException('No products found', 404); // Throw an exception if no products are found.
+        return products; // Return the list of products.
     }
 
-    async getProductById(id: string): Promise<ProductResponseDto> { // Method to retrieve a product by ID.
-        return await this.productModel.findById(id); // Find a product by its ID in the database and return it.
+    async getProductById(id: string){ // Method to retrieve a product by ID.
+        const product = await this.productModel.findById(id); // Retrieve a product by its ID from the database.
+        if (!product) throw new HttpException('No product found', 404); // Throw an exception if no product is found.
+        return product; // Return the retrieved product.
     }
 
-    async updateProduct(id: string, updateProductDto: UpdateProductDto): Promise<ProductResponseDto> { // Method to update a product.
-        return await this.productModel.findByIdAndUpdate(id, updateProductDto, { new: true }); // Find a product by ID, update it with the provided data, and return the updated product.
+    async updateProduct(id: string, updateProductDto: UpdateProductDto){ // Method to update a product.
+        const updatedProduct = await this.productModel.findByIdAndUpdate(id, updateProductDto, { new: true }); // Find, update, and return the product with the provided ID from the database.
+        if (!updatedProduct) throw new HttpException('No product found', 404); // Throw an exception if no product is found.
+        return updatedProduct; // Return the updated product.
     }
 
     async deleteProduct(id: string) { // Method to delete a product by ID.
-        return await this.productModel.findByIdAndDelete(id); // Find a product by its ID, delete it from the database, and return the result.
+        const deletedProduct = await this.productModel.findByIdAndDelete(id); // Find and delete the product with the provided ID from the database.
+        if (!deletedProduct) throw new HttpException('No product found', 404); // Throw an exception if no product is found.
+        return deletedProduct; // Return the deleted product.
     }
 }

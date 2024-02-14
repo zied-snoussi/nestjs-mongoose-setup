@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common"; // Import the Injectable decorator from the @nestjs/common library.
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common"; // Import the Injectable decorator from the @nestjs/common library.
 import { InjectModel } from "@nestjs/mongoose"; // Import the InjectModel decorator from the @nestjs/mongoose library.
 import { Model } from "mongoose"; // Import the Model type from the mongoose library.
 import { Rating } from "../schema/Rating.schema"; // Import the Rating schema from the schemas folder.
@@ -15,22 +15,30 @@ export class RatingService {
     }
 
     // Method to retrieve all ratings.
-    async getAllRatings(): Promise<RatingResponseDto[]> {
-        return await this.ratingModel.find(); // Find all ratings in the database and return them.
+    async getAllRatings(){
+        const ratings = await this.ratingModel.find(); // Retrieve all ratings from the database.
+        if(!ratings) throw new HttpException('No ratings found', HttpStatus.NOT_FOUND); // If no ratings are found, throw an error.
+        return ratings; // Return the retrieved ratings.
     }
 
     // Method to retrieve a rating by its ID.
-    async getRatingById(id: string): Promise<RatingResponseDto> {
-        return await this.ratingModel.findById(id); // Find a rating by its ID in the database and return it.
+    async getRatingById(id: string) {
+        const rating = await this.ratingModel.findById(id); // Find a rating by its ID.
+        if(!rating) throw new HttpException('Rating not found', HttpStatus.NOT_FOUND); // If no rating is found, throw an error.
+        return rating; // Return the retrieved rating.
     }
 
     // Method to update a rating by its ID.
-    async updateRating(id: string, updateRatingDto: UpdateRatingDto): Promise<RatingResponseDto> {
-        return await this.ratingModel.findByIdAndUpdate(id, updateRatingDto, { new: true }); // Find a rating by its ID, update it with the provided data, and return the updated rating.
+    async updateRating(id: string, updateRatingDto: UpdateRatingDto) {
+        const updatedRating = await this.ratingModel.findByIdAndUpdate(id, updateRatingDto, { new: true }); // Find a rating by its ID, update it with the provided data, and return the updated rating.
+        if (!updatedRating) throw new HttpException('Rating not found', HttpStatus.NOT_FOUND); // If no rating is found, throw an error.
+        return updatedRating; // Return the updated rating.
     }
 
     // Method to delete a rating by its ID.
     async deleteRating(id: string) {
-        return await this.ratingModel.findByIdAndDelete(id); // Find a rating by its ID and delete it from the database.
+        const deletedRating = await this.ratingModel.findByIdAndDelete(id); // Find a rating by its ID and delete it from the database.
+        if (!deletedRating) throw new HttpException('Rating not found', HttpStatus.NOT_FOUND); // If no rating is found, throw an error.
+        return 'Rating deleted successfully'; // Return a success message.
     }
 }
