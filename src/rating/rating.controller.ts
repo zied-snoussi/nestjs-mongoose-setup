@@ -27,7 +27,7 @@ export class RatingController {
     @UseGuards(JwtGuard, RolesGuard) // Apply JwtGuard and RolesGuard to protect this endpoint.
     @Roles([Role.Admin,Role.Manager]) // Apply the 'admin' role to this endpoint.
     @ApiOkResponse({ description: 'List of all ratings.', type: [RatingResponseDto] }) // Document successful response.
-    async getAllRatings(): Promise<RatingResponseDto[]> { // Define route handler for retrieving all ratings.
+    async getAllRatings() { // Define route handler for retrieving all ratings.
         const ratings = await this.ratingService.getAllRatings(); // Call the RatingService method to fetch all ratings.
         if (!ratings) throw new HttpException('No ratings found', 404); // Throw an error if no ratings are found.
         return ratings; // Return the fetched ratings.
@@ -38,7 +38,7 @@ export class RatingController {
     @Roles([Role.Admin,Role.Manager]) // Apply the 'admin' role to this endpoint.
     @ApiOkResponse({ description: 'Rating found successfully.', type: RatingResponseDto }) // Document successful response.
     @ApiNotFoundResponse({ description: 'Rating not found.' }) // Document not found response.
-    async getRatingById(@Param('id') id: string): Promise<RatingResponseDto> { // Define route handler for retrieving a rating by ID.
+    async getRatingById(@Param('id') id: string) { // Define route handler for retrieving a rating by ID.
         const isValid = mongoose.Types.ObjectId.isValid(id); // Check if the provided ID is a valid ObjectId.
         if (!isValid) throw new HttpException('Invalid rating id', 400); // Throw an error if the ID is invalid.
         const rating = await this.ratingService.getRatingById(id); // Call the RatingService method to fetch the rating by ID.
@@ -51,7 +51,7 @@ export class RatingController {
    @Roles([Role.Admin]) // Apply the 'admin' role to this endpoint.    @UsePipes(new ValidationPipe()) // Validate request payload using ValidationPipe.
     @ApiOkResponse({ description: 'Rating updated successfully.', type: RatingResponseDto }) // Document successful response.
     @ApiNotFoundResponse({ description: 'Rating not found.' }) // Document not found response.
-    async updateRating(@Param('id') id: string, @Body() updateRatingDto: UpdateRatingDto): Promise<RatingResponseDto> { // Define route handler for updating a rating by ID.
+    async updateRating(@Param('id') id: string, @Body() updateRatingDto: UpdateRatingDto) { // Define route handler for updating a rating by ID.
         const isValid = mongoose.Types.ObjectId.isValid(id); // Check if the provided ID is a valid ObjectId.
         if (!isValid) throw new HttpException('Invalid rating id', 400); // Throw an error if the ID is invalid.
         const rating = await this.ratingService.updateRating(id, updateRatingDto); // Call the RatingService method to update the rating.

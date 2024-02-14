@@ -5,34 +5,35 @@ import { User } from "../schema/User.schema"; // Import the User schema from the
 import { CreateUserDto, UpdateUserDto, UserListResponseDto, UserResponseDto } from "./dto/User.dto";
 import * as bcrypt from 'bcrypt';
 
+const generatePassword = (password: string) => {
+    const salt = bcrypt.genSaltSync(10);
+    return bcrypt.hashSync(password, salt);
+}
+
+
 // The UserService class is a provider that is injected into the UsersModule.
 @Injectable()
 export class UserService {
     // The @InjectModel() decorator is used to inject the User model into the UserService class.
     constructor(
-        @InjectModel(User.name) private userModel: Model<User>,
+        @InjectModel(User.name) private readonly userModel: Model<User>,
     ) { }
 
     // Method to create a new user
-    async createUser(createUserDto: CreateUserDto): Promise<User> {
+    async createUser(createUserDto: CreateUserDto) {
         const user = await this.userModel.findOne({ email: createUserDto.email });
-
-        // If the user exists, throw an error.
         if (user) throw new HttpException('Email is already taken', HttpStatus.UNPROCESSABLE_ENTITY);
-
-        // Hash the password and update the createUserDto
-        const salt = bcrypt.genSaltSync(10);
-        const hash = bcrypt.hashSync(createUserDto.password, salt);
-        createUserDto.password = hash;
-
-        // Save the new user
-        const createdUser = new this.userModel(createUserDto);
-        return createdUser.save();
+        if (createUserDto.password === '' || createUserDto.password.length < 6) throw new HttpException('Password must be at least 6 characters long', HttpStatus.UNPROCESSABLE_ENTITY);
+        createUserDto.password = generatePassword(createUserDto.password);
+        const newUser = await (new this.userModel(createUserDto)).save();
+        return newUser;
     }
 
     // Method to retrieve all users
-    async getAllUsers(): Promise<UserListResponseDto> {
-        return { users: await this.userModel.find() };
+    async getAllUsers() {
+        const users = await this.userModel.find();
+        if (!users) throw new HttpException('No users found', HttpStatus.NOT_FOUND);
+        return users;
     }
 
     // Method to retrieve a user by ID
@@ -41,7 +42,7 @@ export class UserService {
     }
 
     // Method to update a user
-    async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
+    async updateUser(id: string, updateUserDto: UpdateUserDto) {
         const user = await this.userModel.findById(id);
         if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
         if (updateUserDto.password) {
@@ -58,7 +59,8 @@ export class UserService {
                     delete updateUserDto.password;
                 }
                 // Update the user
-                return await this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true });
+                const userUpdated = await this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true });
+               return userUpdated;
             } else {
                 throw new HttpException('Password is incorrect', HttpStatus.UNAUTHORIZED);
             }
@@ -69,12 +71,14 @@ export class UserService {
     async deleteUser(id: string) {
         const user = await this.userModel.findById(id);
         if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-
-        // Delete the user
         return await this.userModel.findByIdAndDelete(id);
     }
     // Method to find a user by email
     async findUserByEmail(email: string): Promise<User> {
         return await this.userModel.findOne({ email });
+    }
+
+    async deleteCollection(): Promise<any>{
+        return await this.userModel.deleteMany({});
     }
 }

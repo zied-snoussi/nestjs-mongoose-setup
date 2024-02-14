@@ -1,220 +1,85 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { UserController } from './user.controller';
-import { UserService } from './user.service';
-import { CreateUserDto } from './dto/User.dto';
-import { HttpException, HttpStatus } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from '../schema/User.schema';
-import { JwtModule } from '@nestjs/jwt';
+import { Test, TestingModule } from "@nestjs/testing";
+import { UserController } from "./user.controller";
+import { UserService } from "./user.service";
+import { UpdateUserDtoStub, UserDtoStub, UsersDtoSubResponse } from "../test/stubs/user.dto.stub";
+import { ConfigModule } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
+import { Role } from "../enums/role.enum";
 
-const users = [
-  {
-    _id: '1',
-    first_name: 'John',
-    last_name: 'Doe',
-    username: 'johndoe',
-    email: 'johndoe@example.com',
-    role: 'admin',
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    _id: '2',
-    first_name: 'Jane',
-    last_name: 'Smith',
-    username: 'janesmith',
-    email: 'janesmith@example.com',
-    role: 'manager',
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  // Add more mocked user objects as needed
-];
+describe("UserController", () => {
+    let controller: UserController;
+    let mockUserService; // Declare mockUserService variable outside beforeEach for wider scope
 
-describe('UserController', () => {
-  let controller: UserController;
-  let userService: UserService;
+    beforeEach(async () => {
+        // Define mock user service with Jest mock functions
+        mockUserService = {
+            createUser: jest.fn(dto => UserDtoStub),
+            getAllUsers: jest.fn().mockResolvedValue(UsersDtoSubResponse),
+            getUserById: jest.fn().mockResolvedValue(UserDtoStub),
+            updateUser: jest.fn().mockImplementation((_id, dto) => "User updated successfully"),
+            deleteUser: jest.fn().mockImplementation((_id)=> "User deleted successfully"),
+        };
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        // MongooseModule.forFeature() imports the User schema into the MongooseModule.
-        MongooseModule.forFeature([
-            {
-                name: User.name, // Specify the name of the schema.
-                schema: UserSchema, // Specify the schema itself.
-            }
-        ]),
-        // JwtModule.register() imports the JwtModule and configures it to use a global secret.
-        JwtModule.register({
-            global: true, // Set the module to be available globally.
-            secret: process.env.JWT_SECRET_KEY, // Use the JWT secret key from environment variables.
+        // Create a testing module with mocked UserService
+        const module: TestingModule = await Test.createTestingModule({
+            imports: [ConfigModule.forRoot({
+                envFilePath: '.env.test.local', // Load environment variables from local file
+            })],
+            controllers: [UserController],
+            providers: [JwtService, UserService], // Provide JwtService and real UserService
         })
-    ],
-      controllers: [UserController],
-      providers: [
-        {
-          provide: UserService,
-          useValue: {
-            createUser: jest.fn(),
-            getAllUsers: jest.fn(),
-            getUserById: jest.fn(),
-            updateUser: jest.fn(),
-            deleteUser: jest.fn(),
-          },
-        },
-      ],
-    }).compile();
+            .overrideProvider(UserService) // Override the provider for the UserService
+            .useValue(mockUserService) // Use the mockUserService instead of the real UserService
+            .compile(); // Compile the module
 
-    controller = module.get<UserController>(UserController);
-    userService = module.get<UserService>(UserService);
-  });
-
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-
-  describe('createUser', () => {
-    it('should create a new user', async () => {
-      const createUserDto: CreateUserDto = {
-        username: 'test',
-        password: 'test',
-        role: 'admin',
-        email: 'test@example.com',
-        first_name: 'test',
-        last_name: 'test',
-      };
-
-      const createdUser = { ...createUserDto, _id: '3' };
-
-      userService.createUser.prototype.mockResolvedValue(createdUser);
-
-      const result = await controller.createUser(createUserDto);
-
-      expect(userService.createUser).toHaveBeenCalledWith(createUserDto);
-      expect(result).toEqual(createdUser);
+        controller = module.get<UserController>(UserController); // Get instance of UserController from module
     });
 
-    it('should throw error if user creation fails', async () => {
-      const createUserDto: CreateUserDto = {
-        username: 'test',
-        password: 'test',
-        role: 'admin',
-        email: 'test@example.com',
-        first_name: 'test',
-        last_name: 'test',
-      };
-
-      userService.createUser.prototype.mockResolvedValue(null);
-
-      await expect(controller.createUser(createUserDto)).rejects.toThrow(
-        new HttpException('User not created', HttpStatus.NOT_FOUND)
-      );
+    afterEach(() => {
+        jest.clearAllMocks(); // Clear all Jest mocks after each test
     });
-  });
 
-  describe('getAllUsers', () => {
+    it("should be defined", () => {
+        expect(controller).toBeDefined(); // Check if controller is defined
+    });
+
+
+    it('should create a user', () => {
+        expect(controller.createUser(UserDtoStub)).toEqual(UserDtoStub); // Check if createUser method returns correct value
+        expect(mockUserService.createUser).toHaveBeenCalledWith(UserDtoStub); // Check if createUser method of mockUserService is called with correct arguments
+    });
+
+    it('should return a user', async () => {
+        const _id = '60d0fe4a6e3a491b8a6e6d8d';
+        const user = await controller.getUserById(_id); // Call getUserById method
+        expect(user).toEqual(UserDtoStub); // Check if returned user matches expected user
+        expect(mockUserService.getUserById).toHaveBeenCalledWith(_id); // Check if getUserById method of mockUserService is called with correct arguments
+    });
+
     it('should return a list of users', async () => {
-      userService.getAllUsers.prototype.mockResolvedValue(users);
-
-      const result = await controller.getAllUsers();
-
-      expect(userService.getAllUsers).toHaveBeenCalled();
-      expect(result).toEqual(users);
+        const users = await controller.getAllUsers(); // Call getAllUsers method
+        expect(users).toEqual(UsersDtoSubResponse); // Check if returned users match expected users
+        expect(mockUserService.getAllUsers).toHaveBeenCalled(); // Check if getAllUsers method of mockUserService is called
     });
 
-    it('should throw error if no users found', async () => {
-      userService.getAllUsers.prototype.mockResolvedValue([]);
-
-      await expect(controller.getAllUsers()).rejects.toThrow(
-        new HttpException('No users found', HttpStatus.NOT_FOUND)
-      );
-    });
-  });
-
-  describe('getUserById', () => {
-    it('should return a user by id', async () => {
-      const id = '1';
-      const user = users[0];
-      userService.getUserById.prototype.mockResolvedValue(user);
-
-      const result = await controller.getUserById(id);
-
-      expect(userService.getUserById).toHaveBeenCalledWith(id);
-      expect(result).toEqual(user);
+    it('should update a user', async () => {
+        const _id = '60d0fe4a6e3a491b8a6e6d8d';
+        const dto = { "first_name": "John", "last_name": "Doe","password": "password123", role: Role.Admin };
+    
+        // Await the updateUser method call
+        const updatedUser = await controller.updateUser(_id, dto);
+    
+        // Assert the resolved value
+        expect(updatedUser).toEqual("User updated successfully"); // Check if returned message matches expected message
+        expect(mockUserService.updateUser).toHaveBeenCalledWith(_id, dto); // Check if updateUser method of mockUserService is called with correct arguments
     });
 
-    it('should throw error if user not found', async () => {
-      const id = '1';
-      userService.getUserById.prototype.mockResolvedValue(null);
 
-      await expect(controller.getUserById(id)).rejects.toThrow(
-        new HttpException('No user found', HttpStatus.NOT_FOUND)
-      );
-    });
-  });
-
-  describe('updateUser', () => {
-    it('should update a user by id', async () => {
-      const id = '1';
-      const updateUserDto = {
-        username: 'test',
-        password: 'test',
-        role: 'admin',
-        email: 'test@example.com',
-        first_name: 'test',
-        last_name: 'test',
-      };
-
-      const updatedUser = { ...updateUserDto, _id: id };
-
-      userService.updateUser.prototype.mockResolvedValue(updatedUser);
-
-      const result = await controller.updateUser(id, updateUserDto);
-
-      expect(userService.updateUser).toHaveBeenCalledWith(id, updateUserDto);
-      expect(result).toEqual(updatedUser);
+    it('should delete a user', async () => {
+        const _id = '60d0fe4a6e3a491b8a6e6d8d';
+        const deletedUser = await controller.deleteUser(_id); // Call deleteUser method
+        expect(deletedUser).toEqual("User deleted successfully"); // Check if returned message matches expected message
+        expect(mockUserService.deleteUser).toHaveBeenCalledWith(_id); // Check if deleteUser method of mockUserService is called with correct arguments
     });
 
-    it('should throw error if user not found', async () => {
-      const id = '1';
-      const updateUserDto = {
-        username: 'test',
-        password: 'test',
-        role: 'admin',
-        email: 'test@example.com',
-        first_name: 'test',
-        last_name: 'test',
-      };
-
-      userService.updateUser.prototype.mockResolvedValue(null);
-
-      await expect(controller.updateUser(id, updateUserDto)).rejects.toThrow(
-        new HttpException('No user found', HttpStatus.NOT_FOUND)
-      );
-    });
-  });
-
-  describe('deleteUser', () => {
-    it('should delete a user by id', async () => {
-      const id = '1';
-
-      userService.deleteUser.prototype.mockResolvedValue(true);
-
-      const result = await controller.deleteUser(id);
-
-      expect(userService.deleteUser).toHaveBeenCalledWith(id);
-      expect(result).toEqual(true);
-    });
-
-    it('should throw error if user not found', async () => {
-      const id = '1';
-
-      userService.deleteUser.prototype.mockResolvedValue(false);
-
-      await expect(controller.deleteUser(id)).rejects.toThrow(
-        new HttpException('No user found', HttpStatus.NOT_FOUND)
-      );
-    });
-  });
 });

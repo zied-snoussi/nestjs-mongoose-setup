@@ -3,8 +3,10 @@ import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
 import { CreateOrderDto, UpdateOrderDto } from './dto/Order.dto';
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Order, OrderSchema } from '../schema/Order.schema';
+import { ConfigModule } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 
 describe('OrderController', () => {
   let controller: OrderController;
@@ -12,12 +14,33 @@ describe('OrderController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [MongooseModule.forFeature([{ // Import the MongooseModule with the Order schema.
+      imports: [
+        ConfigModule.forRoot({
+          envFilePath: '.env.test.local', // Load environment variables from local file
+        }),
+        // Connect to MongoDB database using Mongoose
+        MongooseModule.forRoot(`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_NAME}`),
+        MongooseModule.forFeature([{ // Import the MongooseModule with the Order schema.
         name: Order.name,
         schema: OrderSchema,
     }])],
       controllers: [OrderController],
-      providers: [OrderService],
+      providers: [
+        JwtService,
+        OrderService,
+        {
+          provide: getModelToken(Order.name),
+          useValue: {
+            new: jest.fn(),
+            constructor: jest.fn(),
+            save: jest.fn(),
+            find: jest.fn(),
+            findById: jest.fn(),
+            findByIdAndUpdate: jest.fn(),
+            findByIdAndDelete: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     controller = module.get<OrderController>(OrderController);

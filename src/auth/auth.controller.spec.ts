@@ -5,7 +5,8 @@ import { CreateUserDto, UserResponseDto } from '../user/dto/User.dto';
 import { LoginDto } from './dto/Auth.dto';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../schema/User.schema';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -14,6 +15,11 @@ describe('AuthController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
+        ConfigModule.forRoot({
+          envFilePath: '.env.test.local', // Load environment variables from local file
+        }),
+        // Connect to MongoDB database using Mongoose
+        MongooseModule.forRoot(`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_NAME}`),
         JwtModule.register({
           secret: process.env.JWT_SECRET_KEY,
           signOptions: { expiresIn: '1h' },
@@ -29,6 +35,7 @@ describe('AuthController', () => {
 
       controllers: [AuthController],
       providers: [
+        JwtService,
         {
           provide: AuthService,
           useValue: {
