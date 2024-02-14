@@ -39,7 +39,7 @@ describe('UserService', () => {
                 UserService,
                 {
                     provide: 'User', // Use the string 'User' to refer to the UserModel
-                    useValue: Model, // Use the Mongoose Model class as the value for the UserModel
+                    useValue: mockUserModel, // Use the mockUserModel instead of the real UserModel
                 },
             ],
         }).compile();
