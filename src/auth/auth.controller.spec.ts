@@ -58,9 +58,7 @@ describe('AuthController', () => {
   describe('register', () => {
     it('should call authService.register with the provided dto', async () => {
       const createUserDto: CreateUserDto = { username: 'test', email: 'test@gmail.com', password: 'password123', role: 'admin', first_name: 'test', last_name: 'user' };
-
       await controller.register(createUserDto);
-
       expect(authService.register).toHaveBeenCalledWith(createUserDto);
     });
   });
