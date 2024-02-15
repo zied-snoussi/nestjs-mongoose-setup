@@ -10,6 +10,16 @@ export const UserDtoStub: CreateUserDto = {
 };
 
 
+export const UserDtoStub2: CreateUserDto = {
+    email: 'rayen@gmail.com',
+    password: 'password123',
+    role: 'admin',
+    first_name: 'rayen',
+    last_name: 'man',
+    username: 'rayennn'
+};
+
+
 export const UsersDtoSubResponse = [
     {
         _id: expect.any(String),
@@ -30,6 +40,11 @@ export const UpdateUserDtoStub = {
     first_name: 'John',
     last_name: 'Doe',
     password: 'password123',
+};
+
+export const LoginDtoStub = {
+    email: 'jhondoe@gmail.com',
+    password: 'password123'
 };
 
 
